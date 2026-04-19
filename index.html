@@ -471,7 +471,8 @@ When escalating, say: "I'm going to connect you with a human agent now. Please h
 
             } catch (error) {
                 removeTyping();
-                addMessage('assistant', `⚠️ **Error:** ${error.message}. Please check your API key and try again.`);
+                console.error('Full error:', error);
+                addMessage('assistant', `⚠️ **Error:** ${error.message} | URL: ${API_URL}`);
                 conversationHistory.pop();
             } finally {
                 if (!document.getElementById('user-input').disabled) {
