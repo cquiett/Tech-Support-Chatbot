@@ -477,7 +477,8 @@ When escalating, say: "I'm going to connect you with a human agent now. Please h
                 addMessage('assistant', `⚠️ **Error:** ${error.message} | URL: ${API_URL}`);
                 conversationHistory.pop();
             } finally {
-                if (!document.getElementById('user-input').disabled) {
+                const wasEscalated = document.querySelector('.system-notice') !== null;
+                if (!wasEscalated) {
                     sendBtn.disabled = false;
                     userInput.disabled = false;
                     userInput.focus();
