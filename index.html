@@ -426,9 +426,12 @@ When escalating, say: "I'm going to connect you with a human agent now. Please h
             if (!message) return;
 
             // Check if user is asking for a human
+            // Check if user is asking for a human
             const humanKeywords = ['talk to a human', 'talk to an agent', 'real person', 'talk to someone', 'representative', 'human agent', 'speak to a person'];
             if (humanKeywords.some(kw => message.toLowerCase().includes(kw))) {
                 addMessage('user', message);
+                userInput.value = '';
+                userInput.style.height = 'auto';
                 escalateToHuman();
                 return;
             }
