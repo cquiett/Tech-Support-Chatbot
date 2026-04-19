@@ -414,9 +414,12 @@ When escalating, say: "I'm going to connect you with a human agent now. Please h
 
         function escalateToHuman() {
             addSystemNotice('🔄 Transferring you to a human agent... Your full conversation history will be shared with the agent for a seamless handoff. Please hold on.');
-            document.getElementById('user-input').disabled = true;
-            document.getElementById('send-btn').disabled = true;
-            // In a real deployment, trigger your human handoff system here
+            const input = document.getElementById('user-input');
+            const btn = document.getElementById('send-btn');
+            input.value = '';
+            input.style.height = 'auto';
+            input.disabled = true;
+            btn.disabled = true;
             // In production: integrate live agent platform here (e.g. Intercom, Zendesk, Crisp)
             // and pass conversationHistory as the handoff transcript
         }
