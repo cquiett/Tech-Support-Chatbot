@@ -285,6 +285,8 @@
         <div class="disclosure-banner">
             🤖 <strong>AI Disclosure:</strong> You are chatting with an AI-powered virtual assistant, not a human.
             For complex issues, click <strong>"Talk to a Human"</strong> at any time.
+            Session data is temporary and not stored after you close this window.
+            This conversation is not legally privileged.
         </div>
 
         <!-- Chat Messages -->
@@ -415,6 +417,8 @@ When escalating, say: "I'm going to connect you with a human agent now. Please h
             document.getElementById('user-input').disabled = true;
             document.getElementById('send-btn').disabled = true;
             // In a real deployment, trigger your human handoff system here
+            // In production: integrate live agent platform here (e.g. Intercom, Zendesk, Crisp)
+            // and pass conversationHistory as the handoff transcript
         }
 
         async function sendMessage() {
