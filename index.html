@@ -462,7 +462,7 @@ When escalating, say: "I'm going to connect you with a human agent now. Please h
                 addMessage('assistant', reply);
 
                 // Check if AI is recommending escalation
-                const escalationPhrases = ['connect you with a human', 'transfer you', 'human agent'];
+                const escalationPhrases = ["i'm going to connect you with a human agent now", "transferring you to a human"];
                 if (escalationPhrases.some(phrase => reply.toLowerCase().includes(phrase))) {
                     setTimeout(() => escalateToHuman(), 3000);
                 }
