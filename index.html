@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Support Chatbot</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .chat-header {
+            background-color: #0f172a;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #334155;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header .icon {
+            background-color: #334155;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 20px;
+        }
+
+        .chat-header .title h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-header .title p {
+            font-size: 12px;
+            color: #4ade80;
+        }
+
+        .escalate-btn {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .escalate-btn:hover {
+            background-color: #b91c1c;
+        }
+
+        .disclosure-banner {
+            background-color: #1e3a5f;
+            border-bottom: 1px solid #2d5a8e;
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #93c5fd;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+
+        .message.assistant {
+            background-color: #334155;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user {
+            background-color: #3b82f6;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.system-notice {
+            background-color: #422006;
+            border: 1px solid #92400e;
+            align-self: center;
+            font-size: 13px;
+            color: #fcd34d;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .message pre {
+            background-color: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .message code {
+            background-color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .message pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .chat-input-area {
+            padding: 16px 24px;
+            background-color: #0f172a;
+            border-top: 1px solid #334155;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        textarea {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            padding: 12px 16px;
+            font-size: 14px;
+            resize: none;
+            min-height: 48px;
+            max-height: 120px;
+            outline: none;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        textarea::placeholder {
+            color: #64748b;
+        }
+
+        textarea:focus {
+            border-color: #3b82f6;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #475569;
+        }
+
+        #send-btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+
+        #send-btn:hover {
+            background-color: #2563eb;
+        }
+
+        #send-btn:disabled {
+            background-color: #334155;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #334155;
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+            width: 70px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background-color: #94a3b8;
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 11px;
+            color: #475569;
+            padding: 6px;
+            background-color: #0f172a;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="header-left">
+                <div class="icon">💻</div>
+                <div class="title">
+                    <h2>Tech Support</h2>
+                    <p>system online</p>
+                </div>
+            </div>
+            <button class="escalate-btn" onclick="escalateToHuman()">🧑‍💼 Talk to a Human</button>
+        </div>
+
+        <!-- AI Disclosure Banner -->
+        <div class="disclosure-banner">
+            🤖 <strong>AI Disclosure:</strong> You are chatting with an AI-powered virtual assistant, not a human.
+            For complex issues, click <strong>"Talk to a Human"</strong> at any time.
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chat-messages">
+            <div class="message assistant">
+                Hi! I'm an AI-powered Tech Support assistant. I can help you with software, hardware, networking, and
+                coding problems. For complex issues, I can connect you with a human agent at any time. How can I help
+                you today?
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <div class="input-wrapper">
+                <textarea id="user-input" placeholder="Describe your technical problem..." rows="1"></textarea>
+                <p class="hint">Press Enter to send &nbsp;|&nbsp; Shift+Enter for new line</p>
+            </div>
+            <button id="send-btn">➤</button>
+        </div>
+
+        <div class="footer-note">Made with Claude AI · Not a licensed professional service</div>
+    </div>
+
+    <script>
+        const API_URL = '/api/chat'; // 🔑 Replace with your actual API key in Vercel
+        const conversationHistory = [];
+
+        const SYSTEM_PROMPT = `
+You are a helpful Tech Support AI assistant for a customer service chatbot, governed by the following AI Governance & Requirements Framework (Version 1.0, April 2025):
+
+--- IDENTITY & DISCLOSURE ---
+- You are an AI assistant, NOT a human. If asked whether you are human or AI, always clearly state you are an AI.
+- Always remind users they can request a human agent at any time.
+
+--- SCOPE ---
+- You ONLY assist with technical support topics: software, hardware, networking, and coding problems.
+- Politely decline any out-of-scope requests and redirect the user back to tech support topics.
+- Do NOT impersonate or give advice as a doctor, lawyer, financial advisor, or any licensed professional.
+
+--- CONTENT GUARDRAILS ---
+- Never generate harmful, illegal, or explicit content.
+- Never share user data with third parties.
+- Never make high-risk decisions without recommending human review.
+- Do not engage in deceptive practices of any kind (FTC compliance).
+
+--- DATA PRIVACY ---
+- Practice data minimization — do not ask for or store sensitive personal data unnecessarily.
+- Do not use conversation data for AI training purposes.
+- Remind users if they share sensitive data that this conversation is not legally privileged.
+- Comply with GDPR, CCPA, and FTC guidelines in all interactions.
+
+--- HUMAN ESCALATION ---
+Immediately offer to escalate to a human agent when:
+1. The issue is too complex for you to resolve.
+2. The user requests a human agent.
+3. Legal or compliance-related questions arise.
+4. The user appears emotionally distressed.
+5. Suspected fraud or security concerns are detected.
+When escalating, say: "I'm going to connect you with a human agent now. Please hold on while I transfer you along with our conversation history."
+
+--- ACCURACY & HONESTY ---
+- Only provide information you are confident about.
+- If unsure, say so and recommend the user consult official documentation or a human agent.
+- Never hallucinate facts, product names, or solutions.
+
+--- TONE ---
+- Be professional, clear, concise, and empathetic.
+- Use step-by-step instructions and markdown formatting when helpful.
+- Always acknowledge the user's frustration if they express it.
+`;
+
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Auto-resize textarea
+        userInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Enter to send, Shift+Enter for new line
+        userInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        function addMessage(role, content) {
+            const div = document.createElement('div');
+            div.classList.add('message', role);
+            div.innerHTML = role === 'assistant' ? marked.parse(content) : escapeHTML(content);
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addSystemNotice(message) {
+            const div = document.createElement('div');
+            div.classList.add('message', 'system-notice');
+            div.textContent = message;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function escapeHTML(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.classList.add('typing-indicator');
+            div.id = 'typing';
+            div.innerHTML = '<span></span><span></span><span></span>';
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTyping() {
+            const el = document.getElementById('typing');
+            if (el) el.remove();
+        }
+
+        function escalateToHuman() {
+            addSystemNotice('🔄 Transferring you to a human agent... Your full conversation history will be shared with the agent for a seamless handoff. Please hold on.');
+            document.getElementById('user-input').disabled = true;
+            document.getElementById('send-btn').disabled = true;
+            // In a real deployment, trigger your human handoff system here
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Check if user is asking for a human
+            const humanKeywords = ['human', 'agent', 'person', 'real person', 'talk to someone', 'representative'];
+            if (humanKeywords.some(kw => message.toLowerCase().includes(kw))) {
+                addMessage('user', message);
+                escalateToHuman();
+                return;
+            }
+
+            addMessage('user', message);
+            conversationHistory.push({ role: 'user', content: message });
+
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            sendBtn.disabled = true;
+            userInput.disabled = true;
+            showTyping();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-3-5-sonnet-20241022',
+                        max_tokens: 1024,
+                        system: SYSTEM_PROMPT,
+                        messages: conversationHistory
+                    })
+                });
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const data = await response.json();
+                const reply = data.content[0].text;
+
+                conversationHistory.push({ role: 'assistant', content: reply });
+                removeTyping();
+                addMessage('assistant', reply);
+
+                // Check if AI is recommending escalation
+                const escalationPhrases = ['connect you with a human', 'transfer you', 'human agent'];
+                if (escalationPhrases.some(phrase => reply.toLowerCase().includes(phrase))) {
+                    setTimeout(() => escalateToHuman(), 3000);
+                }
+
+            } catch (error) {
+                removeTyping();
+                addMessage('assistant', `⚠️ **Error:** ${error.message}. Please check your API key and try again.`);
+                conversationHistory.pop();
+            } finally {
+                if (!document.getElementById('user-input').disabled) {
+                    sendBtn.disabled = false;
+                    userInput.disabled = false;
+                    userInput.focus();
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
